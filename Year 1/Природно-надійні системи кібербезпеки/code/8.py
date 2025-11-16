@@ -49,28 +49,38 @@ decoder_target_data = numpy.zeros(
 for i, (input_text, target_text) in enumerate(zip(input_texts, target_texts)):
     for t, char in enumerate(input_text):
         encoder_input_data[i, t, input_token_index[char]] = 1.0
-    encoder_input_data[i, t + 1:, input_token_index[" "]] = 1.0
+    encoder_input_data[i, t + 1 :, input_token_index[" "]] = 1.0
     for t, char in enumerate(target_text):
         decoder_input_data[i, t, target_token_index[char]] = 1.0
         if t > 0:
             decoder_target_data[i, t - 1, target_token_index[char]] = 1.0
-    decoder_input_data[i, t + 1:, target_token_index[" "]] = 1.0
+    decoder_input_data[i, t + 1 :, target_token_index[" "]] = 1.0
     decoder_target_data[i, t:, target_token_index[" "]] = 1.0
 
-# --- Побудова моделі з LSTM ---
+# --- Побудова моделі з LSTM та Attention ---
 encoder_inputs = tensorflow.keras.Input(shape=(None, num_encoder_tokens))
-encoder = tensorflow.keras.layers.LSTM(latent_dim, return_state=True)
-encoder_lstm_outputs, encoder_state_h, encoder_state_c = encoder(encoder_inputs)
-# Ми зберігаємо обидва стани: h (прихований стан) та c (стан комірки)
+decoder_inputs = tensorflow.keras.Input(shape=(None, num_decoder_tokens))
+
+# Кодер LSTM
+encoder_lstm = tensorflow.keras.layers.LSTM(latent_dim, return_sequences=True, return_state=True)
+encoder_lstm_outputs, encoder_state_h, encoder_state_c = encoder_lstm(encoder_inputs)
 encoder_states = [encoder_state_h, encoder_state_c]
 
-decoder_inputs = tensorflow.keras.Input(shape=(None, num_decoder_tokens))
+# Декодер LSTM
 decoder_lstm = tensorflow.keras.layers.LSTM(latent_dim, return_sequences=True, return_state=True)
-# Подаємо стани кодера як початкові стани декодера
 decoder_lstm_outputs, _, _ = decoder_lstm(decoder_inputs, initial_state=encoder_states)
 
+# Шар уваги
+decoder_attention = tensorflow.keras.layers.Attention()
+decoder_attention_outputs = decoder_attention([decoder_lstm_outputs, encoder_lstm_outputs])
+
+# Об'єднання
+decoder_concatenate = tensorflow.keras.layers.Concatenate()
+decoder_concatenate_outputs = decoder_concatenate([decoder_lstm_outputs, decoder_attention_outputs])
+
+# Фінальний шар
 decoder_dense = tensorflow.keras.layers.Dense(num_decoder_tokens, activation="softmax")
-decoder_outputs = decoder_dense(decoder_lstm_outputs)
+decoder_outputs = decoder_dense(decoder_concatenate_outputs)
 
 model = tensorflow.keras.Model([encoder_inputs, decoder_inputs], decoder_outputs)
 
@@ -78,6 +88,7 @@ model.compile(
     optimizer="rmsprop", loss="categorical_crossentropy", metrics=["accuracy"]
 )
 
+# Навчання моделі
 model.fit(
     [encoder_input_data, decoder_input_data],
     decoder_target_data,
@@ -87,58 +98,91 @@ model.fit(
 )
 
 # --- Побудова моделей для дешифрування ---
-encoder_model = tensorflow.keras.Model(encoder_inputs, encoder_states)
 
-decoder_inputs = model.input[1]
-decoder_input_state_h = tensorflow.keras.Input(shape=(latent_dim,))
-decoder_input_state_c = tensorflow.keras.Input(shape=(latent_dim,))
-decoder_inputs_states = [decoder_input_state_h, decoder_input_state_c]
-
-decoder_lstm = model.layers[3]
-decoder_lstm_outputs, decoder_state_h, decoder_state_c = decoder_lstm(
-    decoder_inputs, initial_state=decoder_inputs_states
+# Модель шифратора (кодер)
+encoder_inputs_inf = model.input[0]
+encoder_lstm_inf = model.layers[2]
+encoder_lstm_outputs_inf, encoder_state_h_inf, encoder_state_c_inf = encoder_lstm_inf(
+    encoder_inputs_inf
 )
-decoder_states = [decoder_state_h, decoder_state_c]
+encoder_model = tensorflow.keras.Model(
+    encoder_inputs_inf,
+    [encoder_lstm_outputs_inf, encoder_state_h_inf, encoder_state_c_inf],
+)
 
-decoder_dense = model.layers[4]
-decoder_outputs = decoder_dense(decoder_lstm_outputs)
+# Модель дешифратора (декодер)
+decoder_inputs_inf = model.input[1]
+decoder_input_lstm_outputs_inf = tensorflow.keras.Input(shape=(None, latent_dim))
+decoder_input_state_h_inf = tensorflow.keras.Input(shape=(latent_dim,))
+decoder_input_state_c_inf = tensorflow.keras.Input(shape=(latent_dim,))
+decoder_input_states_inf = [decoder_input_state_h_inf, decoder_input_state_c_inf]
 
+decoder_lstm_inf = model.layers[3]
+decoder_lstm_outputs_inf, decoder_state_h_inf_out, decoder_state_c_inf_out = decoder_lstm_inf(
+    decoder_inputs_inf, initial_state=decoder_input_states_inf
+)
+decoder_states_inf_out = [decoder_state_h_inf_out, decoder_state_c_inf_out]
+
+decoder_attention_inf = model.layers[4]
+decoder_attention_outputs_inf = decoder_attention_inf(
+    [decoder_lstm_outputs_inf, decoder_input_lstm_outputs_inf]
+)
+
+decoder_concatenate_inf = model.layers[5]
+decoder_concatenate_outputs_inf = decoder_concatenate_inf(
+    [decoder_lstm_outputs_inf, decoder_attention_outputs_inf]
+)
+
+decoder_dense_inf = model.layers[6]
+decoder_outputs_inf = decoder_dense_inf(decoder_concatenate_outputs_inf)
+
+# Збираємо модель декодера
 decoder_model = tensorflow.keras.Model(
-    [decoder_inputs] + decoder_inputs_states, [decoder_outputs] + decoder_states
-)
+    [decoder_inputs_inf]
+    + [decoder_input_lstm_outputs_inf, decoder_input_state_h_inf, decoder_input_state_c_inf],
+    [decoder_outputs_inf] + decoder_states_inf_out,
+    )
 
+# Словники для розкодування (індекс -> символ)
 reverse_input_char_index = dict((i, char) for char, i in input_token_index.items())
 reverse_target_char_index = dict((i, char) for char, i in target_token_index.items())
 
+# --- Цикл дешифрації ---
 for seq_index in range(20):
-    input_seq = encoder_input_data[seq_index: seq_index + 1]
+    input_seq = encoder_input_data[seq_index : seq_index + 1]
 
-    # Кодер LSTM повертає два стани (h і c)
-    states_value = encoder_model.predict(input_seq, verbose=0)
+    # Кодер повертає виходи (output1) та два стани (h1, c1)
+    output1, h1, c1 = encoder_model.predict(input_seq, verbose=0)
 
+    # Створюємо стартовий токен (символ '\t')
     target_seq = numpy.zeros((1, 1, num_decoder_tokens))
     target_seq[0, 0, target_token_index["\t"]] = 1.0
+
     stop_condition = False
     decoded_sentence = ""
 
     while not stop_condition:
-        # Декодер LSTM вимагає обидва стани (h і c)
+        # Декодер отримує (target_seq) та виходи (output1) і стани (h1, c1) кодера
         output_tokens, h, c = decoder_model.predict(
-            [target_seq] + states_value, verbose=0
+            [target_seq] + [output1, h1, c1], verbose=0
         )
 
+        # Обираємо наступний токен з найбільшою ймовірністю
         sampled_token_index = numpy.argmax(output_tokens[0, -1, :])
         sampled_char = reverse_target_char_index[sampled_token_index]
         decoded_sentence += sampled_char
 
+        # Умова зупинки
         if sampled_char == "\n" or len(decoded_sentence) > max_decoder_seq_length:
             stop_condition = True
 
+        # Готуємо наступний вхід для декодера
         target_seq = numpy.zeros((1, 1, num_decoder_tokens))
         target_seq[0, 0, sampled_token_index] = 1.0
 
-        # Оновлюємо обидва стани для наступної ітерації
-        states_value = [h, c]
+        # Оновлюємо стани декодера
+        h1 = h
+        c1 = c
 
     print("-")
     print("Input sentence:", input_texts[seq_index])
