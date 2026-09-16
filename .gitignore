@@ -140,5 +140,9 @@ vite.config.ts.timestamp-*
 
 .idea
 
-# Claude Code project skills (vendored, local-only)
-.claude/skills/
+# Claude Code project skills are vendored, proprietary and local-only.
+# Only the npm manifest is tracked: docx and pptxgenjs are ordinary
+# packages the report generation scripts depend on.
+.claude/skills/*
+!.claude/skills/package.json
+!.claude/skills/package-lock.json
