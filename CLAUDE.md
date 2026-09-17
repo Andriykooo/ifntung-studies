@@ -1,43 +1,60 @@
-# CLAUDE.md — PhD Studies Repository
+# CLAUDE.md — Studies Repository
 
 ## Project Overview
 
-PhD studies repository for **Білозор Дмитро Олександрович** at ЧДТУ (Черкаський державний технологічний університет).
-- **Group:** A-F5-25
-- **Department:** F5 — Кібербезпека та захист інформації
-- **Specialty:** 125 — Кібербезпека
-- **Faculty:** Факультет інформаційних технологій та кібербезпеки
+Studies repository for **Бойчук Андрій Анатолійович** at ІФНТУНГ (Івано-Франківський національний технічний університет нафти і газу).
+- **Year of admission:** 2026 (1st year)
+- **Group:** КН-26-1
+- **Department:** Кафедра комп'ютерних систем і мереж
+- **Specialty:** F3 — Комп'ютерні науки
+- **Faculty:** Факультет інформаційних технологій
 
 ## Repository Structure
 
 ```
 Year 1/
-  Етичний хакінг/                          # Ethical Hacking
-  Мультиагентні системи/                   # Multi-Agent Systems
-  Природно-надійні системи кібербезпеки/   # Cyber Security Systems
-  Сучасні пошукові інформаційні системи…/  # Modern Search Systems
-  Теорія і практика побудови ПВП/          # PRNG Theory & Practice
+  Іноземна мова/                         # Foreign Language
+  Програмування/                         # Programming
+  Вища математика/                       # Higher Mathematics
+  Командна комунікація в ІТ-проєктах/    # Team Communication in IT Projects
+  Дискретна математика/                  # Discrete Mathematics
+  Технології web-графіки/                # Web Graphics Technologies
+  Основи академічного письма/            # Fundamentals of Academic Writing
 Semester reports/
 ```
+
+Each subject folder holds lab/practical assignments, generated reports and reference materials for that course.
+
+## Subjects and Lecturers (Year 1)
+
+| Subject | Lecturer |
+|---|---|
+| Іноземна мова | Дребот Яна Романівна |
+| Програмування | Пашковський Богдан Васильович |
+| Вища математика | Григорчук Галина Василівна |
+| Командна комунікація в ІТ-проєктах | Кропивницький Д.Р. |
+| Дискретна математика | Мойсеєнко Олена Володимирівна |
+| Технології web-графіки | Корнута Олена Володимирівна |
+| Основи академічного письма | Судук Ірина Ігорівна |
 
 ## Language
 
 - Communicate in the same language the user writes in (Ukrainian or English).
-- Report language depends on the subject requirements.
+- Report language depends on the subject requirements (Ukrainian by default; English for Іноземна мова).
 
 ## Document Generation (.docx)
 
 Lab reports are generated programmatically using Node.js + the `docx` npm package.
 
 ### Workflow
-1. Scripts live in `/tmp/docx-work/` (create with `mkdir -p /tmp/docx-work`).
-2. Install dependencies: `cd /tmp/docx-work && npm init -y && npm install docx`.
+1. Scripts live in the session scratchpad directory (or `/tmp/docx-work/` if no scratchpad is available).
+2. Install dependencies: `npm init -y && npm install docx` in the script directory. The repo also keeps a manifest at `.claude/skills/package.json` with `docx` and `pptxgenjs`.
 3. Each lab has its own script: `create1.js`, `create2.js`, etc.
-4. Output goes directly to the subject folder (e.g., `Year 1/Теорія і практика…/Звіт_N.docx`).
-5. Run with `node createN.js` from `/tmp/docx-work/`.
+4. Output goes directly to the subject folder (e.g., `Year 1/Програмування/Звіт_N.docx`).
+5. Run with `node createN.js` from the script directory.
 
-### Formatting Standard (ДСТУ-3008-95)
-All reports MUST follow these formatting rules:
+### Formatting Standard (default, ДСТУ 3008)
+Unless a subject specifies otherwise, reports follow these rules:
 - **Page:** A4 (width: 11906 DXA, height: 16838 DXA)
 - **Margins:** top=1134, bottom=1134, left=1701, right=851 (DXA)
 - **Font:** Times New Roman, 14pt (size=28 in docx half-points)
@@ -48,12 +65,22 @@ All reports MUST follow these formatting rules:
 - **Tables:** bordered (SINGLE, size 4), header row with light blue shading (#BDD7EE)
 - **Page numbers:** centered in footer, same font
 
+If a lecturer provides their own template or requirements (in the subject folder), those take precedence.
+
+### Title Page Data
+- **University:** Івано-Франківський національний технічний університет нафти і газу
+- **Faculty:** Факультет інформаційних технологій
+- **Department:** Кафедра комп'ютерних систем і мереж
+- **Student:** студент групи КН-26-1 Бойчук Андрій Анатолійович
+- **Lecturer:** from the table above, per subject
+- **City/Year:** Івано-Франківськ, current year
+
 ### Document Author
 Every generated `.docx` MUST include document metadata:
 ```js
 new Document({
-  creator: "Dmytro Bilozor",
-  lastModifiedBy: "Dmytro Bilozor",
+  creator: "Andrii Boichuk",
+  lastModifiedBy: "Andrii Boichuk",
   // ...
 })
 ```
@@ -68,11 +95,16 @@ Reference previous `createN.js` scripts when building new ones to maintain consi
 
 ## Git Workflow
 
+### Remotes
+- `origin` — https://github.com/Andriykooo/phd-studies (this repository)
+- `upstream` — the original repository this one was cloned from; not used for day-to-day work
+
 ### Branches
 - **Main branch:** `main`
 - **Feature branches:** English, descriptive, kebab-case
   - Format: `subject-name/lab-N` or `subject-name/description`
-  - Examples: `ethical-hacking/lab-1`, `prng-theory/lab-4`, `multi-agent/report-3`
+  - Subject slugs: `foreign-language`, `programming`, `higher-math`, `team-communication`, `discrete-math`, `web-graphics`, `academic-writing`
+  - Examples: `programming/lab-1`, `discrete-math/lab-4`, `web-graphics/project`
 - Always create a PR to merge into `main`.
 
 ### Commits
@@ -81,7 +113,7 @@ Use **Conventional Commits** format:
 feat(scope): description
 fix(scope): description
 ```
-- Scope = short subject identifier (e.g., `ethical-hacking`, `prng`, `readme`)
+- Scope = subject slug from the list above (or `readme`, `claude`, `skills` for repo housekeeping)
 - Description in English, concise
 
 ## Working Style
@@ -97,9 +129,9 @@ When a lab or task is large (especially document generation with computations):
 ### When "покроково" / "step by step" is requested
 This means: literally one logical unit of work per response. Do not combine multiple sections or computation blocks. Show progress, verify, then proceed to the next piece.
 
-## Lecture Materials
+## Course Materials
 
-For PRNG course, formulas and examples come from `Лекції.pdf` in the subject folder. Always cross-reference computed values against lecture examples to verify correctness.
+Lecture notes, assignment PDFs and templates live inside the corresponding subject folder. When a lab depends on formulas or examples from lectures, cross-reference computed values against the lecture examples to verify correctness.
 
 ## Git Staging
 

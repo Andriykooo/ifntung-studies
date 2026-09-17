@@ -1,0 +1,26 @@
+@startuml
+skinparam dpi 150
+skinparam packageStyle rectangle
+skinparam usecase {
+  BackgroundColor #F4F6FA
+  BorderColor #2F5597
+}
+left to right direction
+actor "Читач" as Reader
+actor "Адміністратор" as Admin
+rectangle "Система управління онлайн-книгою" {
+  usecase UC1 as "Шукати книгу"
+  usecase UC2 as "Переглянути деталі книги"
+  usecase UC3 as "Прочитати книгу"
+  usecase UC4 as "Додати нову книгу"
+  usecase UC5 as "Авторизація користувача"
+  usecase UC6 as "Надіслати попередження\nпро дублікат"
+}
+Reader --> UC1
+Reader --> UC2
+Reader --> UC3
+Admin --> UC1
+Admin --> UC4
+UC3 ..> UC5 : <<include>>
+UC6 ..> UC4 : <<extend>>
+@enduml

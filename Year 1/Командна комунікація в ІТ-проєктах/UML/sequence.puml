@@ -1,0 +1,97 @@
+@startuml
+skinparam dpi 150
+skinparam sequence {
+  ParticipantBackgroundColor #F4F6FA
+  ParticipantBorderColor #2F5597
+  LifeLineBorderColor #2F5597
+  ActorBorderColor #2F5597
+}
+title Діаграма послідовностей процесу «Прочитати книгу»
+actor "Читач" as R
+participant "Вебінтерфейс" as UI
+participant "Сервіс каталогу" as Cat
+participant "Сервіс авторизації" as Auth
+participant "Сервіс читання" as Rd
+database "База даних" as DB
+
+R -> UI : Ввести пошуковий запит
+activate UI
+UI -> Cat : searchBooks(запит)
+activate Cat
+Cat -> DB : вибірка книг за запитом
+activate DB
+DB --> Cat : список книг
+deactivate DB
+Cat --> UI : результати пошуку
+deactivate Cat
+UI --> R : Показати список книг
+deactivate UI
+
+R -> UI : Обрати книгу
+activate UI
+UI -> Cat : getBookDetails(id)
+activate Cat
+Cat -> DB : вибірка даних книги
+activate DB
+DB --> Cat : дані книги
+deactivate DB
+Cat --> UI : деталі книги
+deactivate Cat
+UI --> R : Показати деталі книги
+deactivate UI
+
+R -> UI : Натиснути «Читати»
+activate UI
+UI -> Auth : checkSession()
+activate Auth
+alt сесія відсутня
+  Auth --> UI : не авторизований
+  UI --> R : Показати форму входу
+  R -> UI : Ввести логін і пароль
+  UI -> Auth : login(логін, пароль)
+  Auth -> DB : перевірити обліковий запис
+  activate DB
+  DB --> Auth : дані користувача
+  deactivate DB
+  Auth --> UI : токен сесії
+else сесія активна
+  Auth --> UI : авторизований
+end
+deactivate Auth
+UI -> Rd : openBook(id, користувач)
+activate Rd
+Rd -> DB : завантажити текст і позицію читання
+activate DB
+DB --> Rd : вміст книги, позиція
+deactivate DB
+Rd --> UI : перша сторінка
+deactivate Rd
+UI --> R : Відобразити сторінку
+deactivate UI
+
+loop поки читач гортає сторінки
+  R -> UI : Наступна сторінка
+  activate UI
+  UI -> Rd : getPage(n + 1)
+  activate Rd
+  Rd --> UI : сторінка n + 1
+  deactivate Rd
+  UI --> R : Відобразити сторінку
+  deactivate UI
+end
+
+opt закриття книги
+  R -> UI : Закрити книгу
+  activate UI
+  UI -> Rd : savePosition(id, сторінка)
+  activate Rd
+  Rd -> DB : оновити позицію читання
+  activate DB
+  DB --> Rd : ok
+  deactivate DB
+  Rd --> UI : збережено
+  deactivate Rd
+  UI --> R : Повернутися до деталей книги
+  deactivate UI
+end
+@enduml
