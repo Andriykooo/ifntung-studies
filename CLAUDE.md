@@ -96,7 +96,7 @@ Reference previous `createN.js` scripts when building new ones to maintain consi
 ## Git Workflow
 
 ### Remotes
-- `origin` — https://github.com/Andriykooo/phd-studies (this repository)
+- `origin` — https://github.com/Andriykooo/ifntung-studies (this repository)
 - `upstream` — the original repository this one was cloned from; not used for day-to-day work
 
 ### Branches
