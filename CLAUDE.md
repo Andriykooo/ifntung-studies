@@ -50,7 +50,7 @@ Lab reports are generated programmatically using Node.js + the `docx` npm packag
 1. Scripts live in the session scratchpad directory (or `/tmp/docx-work/` if no scratchpad is available).
 2. Install dependencies: `npm init -y && npm install docx` in the script directory. The repo also keeps a manifest at `.claude/skills/package.json` with `docx` and `pptxgenjs`.
 3. Each lab has its own script: `create1.js`, `create2.js`, etc.
-4. Output goes directly to the subject folder (e.g., `Year 1/Програмування/Звіт_N.docx`).
+4. Output goes directly to the subject folder, named `Лабораторна робота №N - Бойчук - варіант V.docx` (e.g., `Year 1/Програмування/Лабораторна робота №6 - Бойчук - варіант 4.docx`). If the lab has no variant, drop the suffix: `Лабораторна робота №N - Бойчук.docx`.
 5. Run with `node createN.js` from the script directory.
 
 ### Formatting Standard (default, ДСТУ 3008)
