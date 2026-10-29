@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="870" viewBox="0 0 1000 870" font-family="Arial, sans-serif" font-size="15">
+  <!-- Діаграма активностей процесу «Купити напій»: Кавовий автомат (ЛР-8, варіант 4) -->
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#333"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="870" fill="#fff"/>
+
+  <!-- Доріжки (swimlanes) -->
+  <rect x="10" y="10" width="980" height="850" fill="none" stroke="#2F5597" stroke-width="2"/>
+  <line x1="360" y1="10" x2="360" y2="860" stroke="#2F5597" stroke-width="2"/>
+  <line x1="10" y1="50" x2="990" y2="50" stroke="#2F5597" stroke-width="2"/>
+  <rect x="11" y="11" width="348" height="38" fill="#DEEAF6"/>
+  <rect x="361" y="11" width="628" height="38" fill="#DEEAF6"/>
+  <text x="185" y="36" text-anchor="middle" font-weight="bold" font-size="16">Клієнт</text>
+  <text x="675" y="36" text-anchor="middle" font-weight="bold" font-size="16">Кавовий автомат</text>
+
+  <g fill="#F4F6FA" stroke="#2F5597" stroke-width="1.8">
+    <!-- Дії -->
+    <rect x="80" y="128" width="200" height="44" rx="14"/>   <!-- A1 -->
+    <rect x="500" y="128" width="200" height="44" rx="14"/>  <!-- A2 -->
+    <rect x="80" y="273" width="200" height="44" rx="14"/>   <!-- A3 -->
+    <rect x="490" y="273" width="220" height="44" rx="14"/>  <!-- A4 -->
+    <rect x="785" y="203" width="190" height="44" rx="14"/>  <!-- A5 -->
+    <rect x="785" y="498" width="190" height="44" rx="14"/>  <!-- A6 -->
+    <rect x="785" y="578" width="190" height="44" rx="14"/>  <!-- A7 -->
+    <rect x="440" y="593" width="160" height="44" rx="14"/>  <!-- P1 -->
+    <rect x="615" y="593" width="160" height="44" rx="14"/>  <!-- P2 -->
+    <rect x="500" y="708" width="200" height="44" rx="14"/>  <!-- A8 -->
+    <rect x="70" y="708" width="220" height="44" rx="14"/>   <!-- A9 -->
+  </g>
+  <g text-anchor="middle">
+    <text x="180" y="155">Обрати напій</text>
+    <text x="600" y="155">Показати ціну напою</text>
+    <text x="180" y="300">Внести монети / купюру</text>
+    <text x="600" y="300">Зарахувати внесену суму</text>
+    <text x="880" y="221" font-size="14">Показати суму,</text>
+    <text x="880" y="238" font-size="14">якої бракує</text>
+    <text x="880" y="516" font-size="14">Повернути внесені</text>
+    <text x="880" y="533" font-size="14">кошти</text>
+    <text x="880" y="596" font-size="14">Показати</text>
+    <text x="880" y="613" font-size="14">«Напій недоступний»</text>
+    <text x="520" y="620" font-size="14">Приготувати напій</text>
+    <text x="695" y="611" font-size="14">Розрахувати й</text>
+    <text x="695" y="628" font-size="14">видати решту</text>
+    <text x="600" y="735">Видати напій</text>
+    <text x="180" y="735">Забрати напій і решту</text>
+  </g>
+
+  <!-- Початковий вузол -->
+  <circle cx="180" cy="85" r="11" fill="#222"/>
+  <!-- Кінцеві вузли -->
+  <circle cx="180" cy="815" r="13" fill="#fff" stroke="#222" stroke-width="2"/>
+  <circle cx="180" cy="815" r="8" fill="#222"/>
+  <circle cx="880" cy="680" r="13" fill="#fff" stroke="#222" stroke-width="2"/>
+  <circle cx="880" cy="680" r="8" fill="#222"/>
+
+  <!-- Вузли рішення / злиття -->
+  <g fill="#FFF2CC" stroke="#BF9000" stroke-width="1.8">
+    <path d="M180,207 L198,225 L180,243 L162,225 Z"/>   <!-- M1 merge -->
+    <path d="M600,355 L622,377 L600,399 L578,377 Z"/>   <!-- D1 -->
+    <path d="M600,438 L622,460 L600,482 L578,460 Z"/>   <!-- D2 -->
+  </g>
+  <g font-size="13" font-style="italic">
+    <text x="545" y="372" text-anchor="end">сума ≥ ціни?</text>
+    <text x="545" y="455" text-anchor="end">є інгредієнти?</text>
+  </g>
+
+  <!-- Fork / Join -->
+  <rect x="430" y="555" width="355" height="7" fill="#222"/>
+  <rect x="430" y="665" width="355" height="7" fill="#222"/>
+
+  <!-- Переходи -->
+  <g stroke="#333" stroke-width="1.6" fill="none" marker-end="url(#arr)">
+    <line x1="180" y1="96" x2="180" y2="127"/>
+    <line x1="280" y1="150" x2="499" y2="150"/>
+    <polyline points="600,172 600,190 180,190 180,206"/>
+    <line x1="180" y1="243" x2="180" y2="272"/>
+    <line x1="280" y1="295" x2="489" y2="295"/>
+    <line x1="600" y1="317" x2="600" y2="354"/>
+    <polyline points="622,377 880,377 880,248"/>
+    <polyline points="785,225 199,225"/>
+    <line x1="600" y1="399" x2="600" y2="437"/>
+    <polyline points="622,460 880,460 880,497"/>
+    <line x1="880" y1="542" x2="880" y2="577"/>
+    <line x1="880" y1="622" x2="880" y2="666"/>
+    <line x1="600" y1="482" x2="600" y2="554"/>
+    <line x1="520" y1="562" x2="520" y2="592"/>
+    <line x1="695" y1="562" x2="695" y2="592"/>
+    <line x1="520" y1="637" x2="520" y2="664"/>
+    <line x1="695" y1="637" x2="695" y2="664"/>
+    <line x1="600" y1="672" x2="600" y2="707"/>
+    <line x1="500" y1="730" x2="291" y2="730"/>
+    <line x1="180" y1="752" x2="180" y2="801"/>
+  </g>
+
+  <!-- Сторожові умови -->
+  <g font-size="13">
+    <text x="760" y="370">[ні]</text>
+    <text x="608" y="425">[так]</text>
+    <text x="760" y="453">[ні]</text>
+    <text x="608" y="510">[так]</text>
+    <text x="420" y="218">повторити</text>
+  </g>
+</svg>
