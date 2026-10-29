@@ -1,77 +1,67 @@
 /*
- * Лабораторна робота 6, варіант 2.
- * Гілка feature/random-fill: масив заповнюється генератором випадкових
- * чисел у діапазоні [-10; 10], розмір масиву вводиться з клавіатури.
+ * Лабораторна робота 6, варіант 4.
+ * У масиві B замінити всі від'ємні елементи на парних місцях максимальним
+ * елементом масиву, а на непарних місцях - максимальним серед від'ємних.
+ * Гілка feature/random-fill: розмір вводиться з клавіатури,
+ * елементи генеруються випадково в діапазоні [-20; 20].
  */
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
-#define MAX_N 100
+#define NMAX 100
 
-void print_array(const char *title, const double a[], int n)
+void print_array(const char *title, const int b[], int n)
 {
     printf("%s", title);
     for (int i = 0; i < n; i++)
-        printf("%g ", a[i]);
+        printf("%d ", b[i]);
     printf("\n");
 }
 
-void transform(const double a[], double c[], int n)
+/* Повертає кількість від'ємних елементів (0 - замін не було) */
+int transform(const int b[], int c[], int n)
 {
-    double sum_neg = 0, sum_pos = 0;
-    int cnt_neg = 0, cnt_pos = 0;
+    int max = b[0], max_neg = 0, cnt_neg = 0;
 
     for (int i = 0; i < n; i++) {
-        if (a[i] < 0) { sum_neg += a[i]; cnt_neg++; }
-        else if (a[i] > 0) { sum_pos += a[i]; cnt_pos++; }
+        c[i] = b[i];
+        if (b[i] > max)
+            max = b[i];
+        if (b[i] < 0 && (cnt_neg == 0 || b[i] > max_neg))
+            max_neg = b[i];
+        if (b[i] < 0)
+            cnt_neg++;
     }
-
-    for (int i = 0; i < n; i++)
-        c[i] = a[i];
-
     if (cnt_neg == 0) {
-        printf("Від'ємних елементів немає: парні позиції замінено на 1\n");
-        for (int i = 1; i < n; i += 2)
-            c[i] = 1;
-        return;
+        printf("Від'ємних елементів немає: масив залишається без змін\n");
+        return 0;
     }
-    if (cnt_pos == 0) {
-        printf("Додатних елементів немає: від'ємні елементи замінено на 0\n");
-        for (int i = 0; i < n; i++)
-            c[i] = 0;
-        return;
-    }
-
-    double mean_neg = sum_neg / cnt_neg;
-    double mean_pos = sum_pos / cnt_pos;
-    printf("Середнє від'ємних = %g, середнє додатних = %g\n", mean_neg, mean_pos);
-
+    printf("max = %d, max серед від'ємних = %d\n", max, max_neg);
     for (int i = 0; i < n; i++) {
-        int pos = i + 1;
-        if (a[i] < 0)
-            c[i] = (pos % 2 == 0) ? mean_neg : mean_pos;
+        int pos = i + 1;                 /* номер місця (з 1) */
+        if (b[i] < 0)
+            c[i] = (pos % 2 == 0) ? max : max_neg;
     }
+    return cnt_neg;
 }
 
 int main(void)
 {
-    double a[MAX_N], c[MAX_N];
-    int n;
+    int b[NMAX], c[NMAX], n;
 
-    printf("Введіть розмір масиву (1..%d): ", MAX_N);
-    if (scanf("%d", &n) != 1 || n < 1 || n > MAX_N) {
+    printf("Введіть розмір масиву (1..%d): ", NMAX);
+    if (scanf("%d", &n) != 1 || n < 1 || n > NMAX) {
         printf("Некоректний розмір масиву\n");
         return 1;
     }
-
-    srand((unsigned) time(NULL));
-    for (int i = 0; i < n; i++)
-        a[i] = rand() % 21 - 10;        /* випадкове ціле з [-10; 10] */
     printf("\n");
+    srand((unsigned)time(NULL));
+    for (int i = 0; i < n; i++)
+        b[i] = rand() % 41 - 20;          /* випадкове число з [-20; 20] */
 
-    print_array("Заданий масив A:       ", a, n);
-    transform(a, c, n);
+    print_array("Заданий масив B:       ", b, n);
+    transform(b, c, n);
     print_array("Новоутворений масив C: ", c, n);
     return 0;
 }
